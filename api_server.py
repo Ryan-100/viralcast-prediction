@@ -124,6 +124,19 @@ def initialize():
     
     return True
 
+# ============================================================================
+# CRITICAL: Initialize when module is loaded (for Gunicorn/production)
+# ============================================================================
+print("\n🔄 Initializing ViralCast API...")
+_init_success = initialize()
+if not _init_success:
+    print("❌ WARNING: API initialization failed - endpoints will return errors")
+print()
+
+# ============================================================================
+# API ENDPOINTS
+# ============================================================================
+
 @app.route('/api/current-stats', methods=['GET'])
 def get_current_stats():
     """Get current statistics from latest data"""
