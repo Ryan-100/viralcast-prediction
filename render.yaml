@@ -1,0 +1,13 @@
+services:
+  # Backend API Service
+  - type: web
+    name: viralcast-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn api_server:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        generateValue: true
+    healthCheckPath: /health

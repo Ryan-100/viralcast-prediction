@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViralCast - Real-time Airborne Disease Intelligence Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo-icon"></div>
+                <div class="logo-text">
+                    <h1>ViralCast</h1>
+                    <p>Real-time Airborne Disease Intelligence</p>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn-secondary" onclick="openInputModal()">📍 Custom Location</button>
+            </div>
+        </header>
+
+        <!-- Custom Input Modal -->
+        <div id="inputModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🌍 Custom Location Analysis</h2>
+                    <span class="close" onclick="closeInputModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="customInputForm" onsubmit="handleCustomInput(event)">
+                        <!-- Location Input -->
+                        <div class="form-group">
+                            <label for="locationInput">
+                                <span class="label-icon">📍</span>
+                                Location (Country/Region)
+                            </label>
+                            <input 
+                                type="text" 
+                                id="locationInput" 
+                                class="form-input"
+                                placeholder="e.g., United States, Tokyo, United Kingdom"
+                                required
+                            />
+                            <div id="locationValidation" class="validation-message"></div>
+                            <small class="form-hint">Enter a country, region, or city name</small>
+                        </div>
+
+                        <!-- Previous Week Cases -->
+                        <div class="form-group">
+                            <label for="casesInput">
+                                <span class="label-icon">📊</span>
+                                Previous Week Disease Cases
+                            </label>
+                            <input 
+                                type="number" 
+                                id="casesInput" 
+                                class="form-input"
+                                placeholder="e.g., 50000"
+                                min="0"
+                                required
+                            />
+                            <small class="form-hint">Total new airborne disease cases from the previous week</small>
+                        </div>
+
+                        <!-- Hospitalizations (Optional) -->
+                        <div class="form-group">
+                            <label for="hospitalizationsInput">
+                                <span class="label-icon">🏥</span>
+                                Current Hospitalizations (Optional)
+                            </label>
+                            <input 
+                                type="number" 
+                                id="hospitalizationsInput" 
+                                class="form-input"
+                                placeholder="e.g., 5000"
+                                min="0"
+                            />
+                            <small class="form-hint">Current number of disease-related patients in hospitals</small>
+                        </div>
+
+                        <!-- Stringency Index -->
+                        <div class="form-group">
+                            <label for="stringencyInput">
+                                <span class="label-icon">🔒</span>
+                                Government Stringency Index
+                                <span class="value-display" id="stringencyValue">50</span>
+                            </label>
+                            <input 
+                                type="range" 
+                                id="stringencyInput" 
+                                class="form-slider"
+                                min="0"
+                                max="100"
+                                value="50"
+                                oninput="updateSliderValue('stringency', this.value)"
+                            />
+                            <div class="slider-labels">
+                                <span>0 (No restrictions)</span>
+                                <span>100 (Full lockdown)</span>
+                            </div>
+                            <small class="form-hint">Government response strictness (0-100)</small>
+                        </div>
+
+                        <!-- Mobility Data -->
+                        <div class="form-group">
+                            <label for="mobilityInput">
+                                <span class="label-icon">🚶</span>
+                                Population Mobility
+                                <span class="value-display" id="mobilityValue">0%</span>
+                            </label>
+                            <input 
+                                type="range" 
+                                id="mobilityInput" 
+                                class="form-slider"
+                                min="-100"
+                                max="100"
+                                value="0"
+                                oninput="updateSliderValue('mobility', this.value)"
+                            />
+                            <div class="slider-labels">
+                                <span>-100% (Lowest)</span>
+                                <span>0% (Baseline)</span>
+                                <span>+100% (Highest)</span>
+                            </div>
+                            <small class="form-hint">Change in mobility compared to baseline</small>
+                        </div>
+
+                        <!-- Vaccination Rate -->
+                        <div class="form-group">
+                            <label for="vaccinationInput">
+                                <span class="label-icon">💉</span>
+                                Vaccination Rate
+                                <span class="value-display" id="vaccinationValue">50%</span>
+                            </label>
+                            <input 
+                                type="range" 
+                                id="vaccinationInput" 
+                                class="form-slider"
+                                min="0"
+                                max="100"
+                                value="50"
+                                oninput="updateSliderValue('vaccination', this.value)"
+                            />
+                            <div class="slider-labels">
+                                <span>0%</span>
+                                <span>100% (Fully vaccinated)</span>
+                            </div>
+                            <small class="form-hint">Percentage of population fully vaccinated</small>
+                        </div>
+
+                        <!-- Population Density (Optional) -->
+                        <div class="form-group">
+                            <label for="densityInput">
+                                <span class="label-icon">🏙️</span>
+                                Population Density (Optional)
+                            </label>
+                            <input 
+                                type="number" 
+                                id="densityInput" 
+                                class="form-input"
+                                placeholder="e.g., 350 people/km²"
+                                min="0"
+                            />
+                            <small class="form-hint">People per square kilometer</small>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-actions">
+                            <button type="button" class="btn-cancel" onclick="closeInputModal()">Cancel</button>
+                            <button type="submit" class="btn-submit">
+                                🔮 Generate Prediction
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Outbreak Risk Card -->
+            <div class="glass-card risk-card">
+                <div class="risk-icon">⚠️</div>
+                <span class="risk-label">Outbreak Risk</span>
+                <h2 class="risk-level moderate" id="riskLevel">Moderate</h2>
+            </div>
+
+            <!-- Projected Trajectory -->
+            <div class="glass-card trajectory-section">
+                <div class="section-header">
+                    <div>
+                        <h3 class="section-title">Projected Trajectory</h3>
+                        <p class="section-subtitle">Next 7 Days Forecast</p>
+                    </div>
+                    <span class="status-badge" id="trendBadge">Stable</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trajectoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Current Stats -->
+            <div class="glass-card stats-panel">
+                <h3 class="section-title">Current Stats</h3>
+                <div class="stat-item">
+                    <p class="stat-label">Weekly Airborne Disease Cases</p>
+                    <span class="stat-value" id="weeklyCases">Loading...</span>
+                    <span class="stat-date" id="casesDate">week ending ...</span>
+                </div>
+                <div class="stat-item">
+                    <p class="stat-label">Disease-Related Hospitalizations</p>
+                    <span class="stat-value" id="hospitalizations">Loading...</span>
+                    <span class="stat-date" id="hospDate">week ending ...</span>
+                </div>
+                    <div class="stat-item">
+                        <p class="stat-label">Predicted Cases Change</p>
+                        <p class="stat-value" id="predictedChange">--</p>
+                        <p class="stat-date" id="changeDate">--</p>
+                    </div>
+            </div>
+        </div>
+
+        <!-- Key Drivers & Impact -->
+        <section class="drivers-section">
+            <h2 class="section-title">⚡ Key Drivers & Impact</h2>
+            <div class="drivers-grid">
+                <div class="driver-card">
+                    <div class="driver-icon" id="driver1Icon">💉</div>
+                    <h4 class="driver-title" id="driver1Title">VACCINATION COVERAGE</h4>
+                    <p class="driver-description" id="driver1Desc">Vaccination rate and population immunity play a crucial role in controlling disease spread and reducing severe outcomes.</p>
+                </div>
+                <div class="driver-card">
+                    <div class="driver-icon" id="driver2Icon">🔒</div>
+                    <h4 class="driver-title" id="driver2Title">GOVERNMENT RESPONSE</h4>
+                    <p class="driver-description" id="driver2Desc">Stringency of public health measures and government restrictions significantly impact transmission rates.</p>
+                </div>
+                <div class="driver-card">
+                    <div class="driver-icon" id="driver3Icon">🚶</div>
+                    <h4 class="driver-title" id="driver3Title">POPULATION MOBILITY</h4>
+                    <p class="driver-description" id="driver3Desc">Movement patterns and social interactions directly correlate with disease transmission opportunities.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Executive Summary & 14-Day Outlook -->
+        <section class="outlook-section">
+            <div class="summary-box">
+                <h3 class="summary-title">Executive Summary</h3>
+                <p class="summary-text" id="executiveSummary">
+                    The COVID-19 situation in Japan is currently assessed at a moderate risk level with a stable trend, 
+                    reflecting ongoing but controlled amidst regular viral activity. National data across Japan, 
+                    specific to the daily data for Tokyo, shows a minimal fluctuation of COVID-19, the healthcare 
+                    system is anticipated to manage the current burden, treating it akin to seasonal respiratory illnesses.
+                </p>
+            </div>
+            <div class="outlook-box">
+                <h3 class="outlook-title">14-Day Outlook</h3>
+                <p class="outlook-content" id="outlookText">
+                    <em>"The projected risk trajectory for the upcoming week suggests a continued stable state for 
+                    Tokyo, with minor fluctuations around the current baseline. This prediction accounts for the 
+                    latest national surveillance data, and shows a slight decline in reported COVID-19 cases, 
+                    balanced by the expected increase in overall respiratory virus activity during the winter season. 
+                    Continued personal vigilance, especially in crowded settings, is recommended."</em>
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
