@@ -29,17 +29,27 @@ def initialize():
     print("VIRALCAST API SERVER - INITIALIZING")
     print("=" * 80)
     
-    # Paths
-    # Check local 'models' folder first (Production/Self-contained)
+    # Paths - Check local 'models' folder first (Production/Self-contained)
     current_dir = os.path.dirname(os.path.abspath(__file__))
+    print(f"\nCurrent directory: {current_dir}")
+    
+    # List files in current directory
+    print(f"\nFiles in current directory:")
+    try:
+        for item in os.listdir(current_dir):
+            print(f"  - {item}")
+    except Exception as e:
+        print(f"  Error listing directory: {e}")
+    
     local_model_path = os.path.join(current_dir, 'models', 'improved_lstm_best_model.keras')
     
     if os.path.exists(local_model_path):
-        print("Using local self-contained assets (Production mode)")
+        print("\n✓ Using local self-contained assets (Production mode)")
         base_path = current_dir
     else:
-        print("Using parent directory assets (Development mode)")
+        print("\n⚠ Local models not found, trying parent directory (Development mode)")
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        print(f"Parent directory: {base_path}")
 
     model_path = os.path.join(base_path, 'models', 'improved_lstm_best_model.keras')
     scaler_path = os.path.join(base_path, 'models', 'weekly_scaler.pkl')
@@ -47,28 +57,62 @@ def initialize():
     
     # Load model
     print(f"\n[1/3] Loading LSTM model from: {model_path}")
+    print(f"      File exists: {os.path.exists(model_path)}")
     if not os.path.exists(model_path):
-        print(f"ERROR: Model not found at {model_path}")
+        print(f"❌ ERROR: Model not found at {model_path}")
+        print(f"\nChecking if models directory exists:")
+        models_dir = os.path.join(base_path, 'models')
+        print(f"  Models directory: {models_dir}")
+        print(f"  Exists: {os.path.exists(models_dir)}")
+        if os.path.exists(models_dir):
+            print(f"  Contents:")
+            for item in os.listdir(models_dir):
+                print(f"    - {item}")
         return False
-    model = load_model(model_path)
-    print("✓ Model loaded successfully")
+    
+    try:
+        model = load_model(model_path)
+        print("✓ Model loaded successfully")
+    except Exception as e:
+        print(f"❌ ERROR loading model: {e}")
+        return False
     
     # Load scaler
     print(f"\n[2/3] Loading scaler from: {scaler_path}")
+    print(f"      File exists: {os.path.exists(scaler_path)}")
     if not os.path.exists(scaler_path):
-        print(f"ERROR: Scaler not found at {scaler_path}")
+        print(f"❌ ERROR: Scaler not found at {scaler_path}")
         return False
-    scaler = joblib.load(scaler_path)
-    print("✓ Scaler loaded successfully")
+    
+    try:
+        scaler = joblib.load(scaler_path)
+        print("✓ Scaler loaded successfully")
+    except Exception as e:
+        print(f"❌ ERROR loading scaler: {e}")
+        return False
     
     # Load data
     print(f"\n[3/3] Loading weekly data from: {data_path}")
+    print(f"      File exists: {os.path.exists(data_path)}")
     if not os.path.exists(data_path):
-        print(f"ERROR: Data not found at {data_path}")
+        print(f"❌ ERROR: Data not found at {data_path}")
+        print(f"\nChecking if output directory exists:")
+        output_dir = os.path.join(base_path, 'output')
+        print(f"  Output directory: {output_dir}")
+        print(f"  Exists: {os.path.exists(output_dir)}")
+        if os.path.exists(output_dir):
+            print(f"  Contents:")
+            for item in os.listdir(output_dir):
+                print(f"    - {item}")
         return False
-    weekly_data = pd.read_csv(data_path)
-    weekly_data['date'] = pd.to_datetime(weekly_data['date'])
-    print(f"✓ Data loaded successfully ({len(weekly_data)} weeks)")
+    
+    try:
+        weekly_data = pd.read_csv(data_path)
+        weekly_data['date'] = pd.to_datetime(weekly_data['date'])
+        print(f"✓ Data loaded successfully ({len(weekly_data)} weeks)")
+    except Exception as e:
+        print(f"❌ ERROR loading data: {e}")
+        return False
     
     print("\n" + "=" * 80)
     print("API SERVER READY")
