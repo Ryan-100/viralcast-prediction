@@ -1,7 +1,7 @@
 // ViralCast - Frontend Application Logic
 // Handles data fetching, visualization, and UI updates
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://viralcast-prediction.onrender.com/api';
 
 let trajectoryChart = null;
 let lastCustomData = null; // Store last custom input for persistence
