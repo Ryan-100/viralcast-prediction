@@ -128,9 +128,17 @@ def initialize():
 # CRITICAL: Initialize when module is loaded (for Gunicorn/production)
 # ============================================================================
 print("\n🔄 Initializing ViralCast API...")
-_init_success = initialize()
-if not _init_success:
-    print("❌ WARNING: API initialization failed - endpoints will return errors")
+_init_success = False
+try:
+    _init_success = initialize()
+    if not _init_success:
+        print("❌ WARNING: API initialization failed - endpoints will return errors")
+        print("Server will start but predictions will not work")
+except Exception as e:
+    print(f"❌ CRITICAL ERROR during initialization: {e}")
+    print("Server will start in degraded mode")
+    import traceback
+    traceback.print_exc()
 print()
 
 # ============================================================================
