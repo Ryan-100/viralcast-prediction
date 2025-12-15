@@ -385,20 +385,28 @@ def health_check():
 
 if __name__ == '__main__':
     import os
-    # Use PORT environment variable for production (Render, Heroku, etc.)
-    port = int(os.environ.get('PORT', 5000))
+    # Use PORT environment variable for production (Render, Railway, Heroku, etc.)
+    try:
+        port = int(os.environ.get('PORT', 5000))
+    except (ValueError, TypeError):
+        print("⚠️ Warning: Invalid PORT environment variable, using default 5000")
+        port = 5000
+    
     # Disable debug in production
     debug = os.environ.get('FLASK_ENV') == 'development'
 
-    if initialize():
-        print("\n🚀 Starting Flask server on http://localhost:{}".format(port))
+    if _init_success:
+        print(f"\n🚀 Starting Flask development server on http://localhost:{port}")
         print("📊 API Endpoints:")
         print("   - GET /api/current-stats")
         print("   - GET /api/historical")
         print("   - GET /api/predict")
+        print("   - POST /api/predict-custom")
         print("   - GET /api/health")
         print("\n💡 Open index.html in your browser to view the dashboard\n")
         
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        app.run(host='0.0.0.0', port=port, debug=debug)
     else:
-        print("\n❌ Failed to initialize. Please check the error messages above.")
+        print("\n❌ Cannot start server - initialization failed")
+        print("Please check the error messages above.")
+
